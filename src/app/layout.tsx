@@ -6,20 +6,23 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Hackathon Template',
-  description: 'Hackathon Template by Perrin Grandne',
+	title: 'Hackathon Template',
+	description: 'Hackathon Template by Perrin Grandne',
 }
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode
+	children: React.ReactNode
 }) {
-  return (
-    <html lang="en" className={inter.className}>
-      <body>
-        <Providers>{children}</Providers>
-      </body>
-    </html>
-  )
+	return (
+		<html
+			lang='en'
+			className={`bg-gradient-to-r from-indigo-200 via-red-200 to-yellow-100 {inter.className}`}
+		>
+			<body>
+				<Providers>{children}</Providers>
+			</body>
+		</html>
+	)
 }
