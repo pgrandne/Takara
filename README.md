@@ -1,6 +1,6 @@
-# Hackathon Template for Web3 Projects
+# Takara
 
-Template for Web3 Hackathon
+takara for ETHOnline 2023
 
 This is a [Next.js](https://nextjs.org/) project
 

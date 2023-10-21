@@ -18,18 +18,46 @@ import { WriteContract } from '../components/WriteContract'
 import { WriteContractPrepared } from '../components/WriteContractPrepared'
 
 export function Page() {
-  return (
-    <>
-      <h1 className="text-xl text-center">Hackathon Template</h1>
-      <div className="absolute top-3 right-3">
-        <ConnectKitButton />
-      </div>
+	const plots = []
+	for (let i = 0; i < 81; i++) {
+		plots.push(<span key={i} className='plot'></span>)
+	}
 
-      <Connected>
-        <hr />
-        <h2>Network</h2>
-        <NetworkSwitcher />
-        {/* <br />
+	return (
+		<>
+			<h1 className='text-xl text-center'>Hackathon Template</h1>
+			<div className='absolute top-3 right-3'>
+				<ConnectKitButton />
+			</div>
+			{/* <Connected> */}
+			<hr />
+			<h2>Network</h2>
+			<NetworkSwitcher />
+			<div className='flex justify-center'>
+				<div id='board'>
+					<div id='overlay' className=''>
+						{plots}
+					</div>
+					{/* <div id='plants' className=''>
+						<div className='plant carrot'>
+							<div className='bg'></div>
+						</div>
+					</div>
+					<div id='plants' className=''>
+						<div className='plant carrot'>
+							<div className='bg'></div>
+						</div>
+					</div>
+					<div id='garden' className=''>
+						<div className='treatment carrot'>
+							<div className='bg'></div>
+						</div>
+					</div> */}
+					<div id='soil' className='bg-green-500'>
+						{plots}
+					</div>
+				</div>
+				{/* <br />
         <hr />
         <h2>Account</h2>
         <Account />
@@ -89,9 +117,10 @@ export function Page() {
         <hr />
         <h2>Write Contract (Prepared)</h2>
         <WriteContractPrepared /> */}
-      </Connected>
-    </>
-  )
+				{/* </Connected> */}
+			</div>
+		</>
+	)
 }
 
 export default Page
