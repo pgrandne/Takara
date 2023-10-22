@@ -59,11 +59,13 @@ export const Game = () => {
 		abi: takaraABI,
 		functionName: 'deposit',
 		args: [100],
+	})
+	const { write, data: dataDone } = useContractWrite({
+		...config,
 		onSuccess(data) {
 			notify1()
 		},
 	})
-	const { write, data: dataDone } = useContractWrite(config)
 
 	const {
 		data: receipt,
