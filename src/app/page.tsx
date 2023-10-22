@@ -18,10 +18,10 @@ import { WriteContract } from '../components/WriteContract'
 import { WriteContractPrepared } from '../components/WriteContractPrepared'
 
 export function Page() {
-	const plots = []
-	for (let i = 0; i < 81; i++) {
-		plots.push(<span key={i} className='plot'></span>)
-	}
+	// const plots = []
+	// for (let i = 0; i < 81; i++) {
+	// 	plots.push(<span key={i} className='plot'></span>)
+	// }
 
 	return (
 		<>
@@ -32,13 +32,13 @@ export function Page() {
 			{/* <Connected> */}
 			<hr />
 			<h2>Network</h2>
-			<NetworkSwitcher />
+			{/* <NetworkSwitcher />
 			<div className='flex justify-center'>
 				<div id='board'>
 					<div id='overlay' className=''>
 						{plots}
-					</div>
-					{/* <div id='plants' className=''>
+					</div> */}
+			{/* <div id='plants' className=''>
 						<div className='plant carrot'>
 							<div className='bg'></div>
 						</div>
@@ -53,11 +53,11 @@ export function Page() {
 							<div className='bg'></div>
 						</div>
 					</div> */}
-					<div id='soil' className='bg-green-500'>
+			{/* <div id='soil' className='bg-green-500'>
 						{plots}
 					</div>
-				</div>
-				{/* <br />
+				</div> */}
+			{/* <br />
         <hr />
         <h2>Account</h2>
         <Account />
@@ -117,8 +117,8 @@ export function Page() {
         <hr />
         <h2>Write Contract (Prepared)</h2>
         <WriteContractPrepared /> */}
-				{/* </Connected> */}
-			</div>
+			{/* </Connected> */}
+			{/* </div> */}
 		</>
 	)
 }
