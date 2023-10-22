@@ -427,8 +427,8 @@
   #board {
     position: sticky;
     top: 1em;
-    width: 90vw;
-    height: 90vw;
+    width: 35vw;
+    height: 35vw;
     min-width: 300px;
     min-height: 300px;
     max-width: calc(100vh - 2em);
@@ -507,62 +507,14 @@
   
   .plant.carrot .bg {
     background-image: url("./images/carrots.svg");
-  }
-  
-  .plant.weed .bg {
-    background-image: url("./images/weeds.svg");
+    background-size: contain;
   }
   
   .plant.carrot.correct .bg {
     background-image: url("./images/carrots-correct.svg");
   }
-  
-  .plant.weed.correct .bg {
-    background-image: url("./images/weeds-correct.svg");
-  }
-  
-  .treatment.carrot .bg {
-    background-color: rgba(81, 140, 179, 1);
-    background-image: url("./images/water.svg");
-    animation: scroll 6s linear infinite;
-  }
-  
-  .treatment.weed .bg {
-    background-color: #63393E;
-    background-image: url("./images/poison.svg");
-    animation: scroll 6s linear infinite;
-  }
-  
-  #overlay.win:before {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 18%;
-    left: 41%;
-    width: 8%;
-    height: 8%;
-    background-image: url("./images/froggy.svg");
-    background-size: 100% 100%;
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    z-index: 110;
-    animation: bounce 2s linear infinite;
-  }
-  
-  #overlay.win:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("./images/carrots-win.png");
-    background-size: 100% 100%;
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    z-index: 100;
-  }
-  
+    
+   
   #garden.win {
     display: none;
   }

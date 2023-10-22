@@ -1,124 +1,26 @@
-import { Account } from '../components/Account'
-import { Balance } from '../components/Balance'
-import { BlockNumber } from '../components/BlockNumber'
+'use client'
+
+import { useState } from 'react'
 import { ConnectKitButton } from '../components/ConnectKitButton'
 import { Connected } from '../components/Connected'
-import { NetworkSwitcher } from '../components/NetworkSwitcher'
-import { ReadContract } from '../components/ReadContract'
-import { ReadContracts } from '../components/ReadContracts'
-import { ReadContractsInfinite } from '../components/ReadContractsInfinite'
-import { SendTransaction } from '../components/SendTransaction'
-import { SendTransactionPrepared } from '../components/SendTransactionPrepared'
-import { SignMessage } from '../components/SignMessage'
-import { SignTypedData } from '../components/SignTypedData'
-import { Token } from '../components/Token'
-import { WatchContractEvents } from '../components/WatchContractEvents'
-import { WatchPendingTransactions } from '../components/WatchPendingTransactions'
-import { WriteContract } from '../components/WriteContract'
-import { WriteContractPrepared } from '../components/WriteContractPrepared'
+import { Tab } from '../components/Tab'
+import { Account } from '../components/Account'
+import { Game } from '../components/Game'
+import { Header } from '../components/Header'
 
 export default function Page() {
-	// const plots = []
-	// for (let i = 0; i < 81; i++) {
-	// 	plots.push(<span key={i} className='plot'></span>)
-	// }
+	const [gameActiveTab, setGameActiveTab] = useState(false)
 
 	return (
 		<>
-			<h1 className='text-xl text-center'>Hackathon Template</h1>
-			<div className='absolute top-3 right-3'>
-				<ConnectKitButton />
-			</div>
-			{/* <Connected> */}
-			<hr />
-			<h2>Network</h2>
-			{/* <NetworkSwitcher />
-			<div className='flex justify-center'>
-				<div id='board'>
-					<div id='overlay' className=''>
-						{plots}
-					</div> */}
-			{/* <div id='plants' className=''>
-						<div className='plant carrot'>
-							<div className='bg'></div>
-						</div>
-					</div>
-					<div id='plants' className=''>
-						<div className='plant carrot'>
-							<div className='bg'></div>
-						</div>
-					</div>
-					<div id='garden' className=''>
-						<div className='treatment carrot'>
-							<div className='bg'></div>
-						</div>
-					</div> */}
-			{/* <div id='soil' className='bg-green-500'>
-						{plots}
-					</div>
-				</div> */}
-			{/* <br />
-        <hr />
-        <h2>Account</h2>
-        <Account />
-        <br />
-        <hr />
-        <h2>Balance</h2>
-        <Balance />
-        <br />
-        <hr />
-        <h2>Block Number</h2>
-        <BlockNumber />
-        <br />
-        <hr />
-        <h2>Read Contract</h2>
-        <ReadContract />
-        <br />
-        <hr />
-        <h2>Read Contracts</h2>
-        <ReadContracts />
-        <br />
-        <hr />
-        <h2>Read Contracts Infinite</h2>
-        <ReadContractsInfinite />
-        <br />
-        <hr />
-        <h2>Send Transaction</h2>
-        <SendTransaction />
-        <br />
-        <hr />
-        <h2>Send Transaction (Prepared)</h2>
-        <SendTransactionPrepared />
-        <br />
-        <hr />
-        <h2>Sign Message</h2>
-        <SignMessage />
-        <br />
-        <hr />
-        <h2>Sign Typed Data</h2>
-        <SignTypedData />
-        <br />
-        <hr />
-        <h2>Token</h2>
-        <Token />
-        <br />
-        <hr />
-        <h2>Watch Contract Events</h2>
-        <WatchContractEvents />
-        <br />
-        <hr />
-        <h2>Watch Pending Transactions</h2>
-        <WatchPendingTransactions />
-        <br />
-        <hr />
-        <h2>Write Contract</h2>
-        <WriteContract />
-        <br />
-        <hr />
-        <h2>Write Contract (Prepared)</h2>
-        <WriteContractPrepared /> */}
-			{/* </Connected> */}
-			{/* </div> */}
+			<Header />
+			<Connected>
+				<Tab
+					gameActiveTab={gameActiveTab}
+					setGameActiveTab={setGameActiveTab}
+				/>
+				{gameActiveTab ? <Game /> : <Account />}
+			</Connected>
 		</>
 	)
 }
