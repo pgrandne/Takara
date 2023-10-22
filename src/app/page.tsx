@@ -17,7 +17,7 @@ import { WatchPendingTransactions } from '../components/WatchPendingTransactions
 import { WriteContract } from '../components/WriteContract'
 import { WriteContractPrepared } from '../components/WriteContractPrepared'
 
-export function Page() {
+export default function Page() {
 	// const plots = []
 	// for (let i = 0; i < 81; i++) {
 	// 	plots.push(<span key={i} className='plot'></span>)
@@ -122,5 +122,3 @@ export function Page() {
 		</>
 	)
 }
-
-export default Page
