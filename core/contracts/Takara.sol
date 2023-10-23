@@ -1,79 +1,22 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.20;
-
-/**
- * @title Takara
- * @dev Store & retrieve value in a variable
- */
-contract Takara {
-    struct player {
-        bool qualified;
-        uint256 lastDayPlayed;
-    }
-
-    address chainlinkAutomation;
-
-    uint256 totalNbParticipants;
-    uint256 public currentDayOfGame;
-    uint256 totalAmount;
-    uint256 public currentNbParticipants;
-    uint256 currentDayPosition;
-
-    mapping(uint256 => address[]) public dayLeaderboard;
-    mapping(address => player) public playerStatus;
-
-    constructor() {
-        chainlinkAutomation = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
-        currentDayOfGame = 1;
-        totalNbParticipants = 5;
-        currentNbParticipants = 5;
-
-        //    DAI : 0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844
-        //    sDAI : 0xD8134205b0328F5676aaeFb3B2a0DC15f4029d8C
-    }
-
-    function validateYourDay() external {
-        // require (playerStatus[msg.sender].qualified == true, "You are not qualified for this round!");
-        require(
-            playerStatus[msg.sender].lastDayPlayed != currentDayOfGame,
-            "You already played"
-        );
-        playerStatus[msg.sender].lastDayPlayed = currentDayOfGame;
-        dayLeaderboard[currentDayOfGame].push(msg.sender);
-    }
-
-    function closeTheDay() external returns (uint256) {
-        require(chainlinkAutomation == msg.sender, "You are not the owner");
-
-        if (dayLeaderboard[currentDayOfGame].length == currentNbParticipants) {
-            dayLeaderboard[currentDayOfGame].pop();
-        }
-        currentNbParticipants = dayLeaderboard[currentDayOfGame].length;
-        currentDayOfGame += 1;
-        return currentDayOfGame;
-    }
-}
-
-// SPDX-License-Identifier: MIT
-// An example of a consumer contract that relies on a subscription for funding.
-pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 /**
- * Request testnet LINK and ETH here: https://faucets.chain.link/
- * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
+ * @title Takara
+ * @author Perrin GRANDNE
+ * @notice Contract for Takara Game
+ * @custom:experimental This is an experimental contract.
  */
 
-/**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
-
-contract VRFv2Consumer is VRFConsumerBaseV2 {
+contract Takara is VRFConsumerBaseV2 {
+    /*********************
+     *** CHAINLINK VRF ***
+     *********************/
     event RequestSent(uint256 requestId, uint32 numWords);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
 
@@ -119,14 +62,45 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
      * HARDCODED FOR GOERLI
      * COORDINATOR: 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
      */
+
+    struct player {
+        bool qualified;
+        uint256 lastDayPlayed;
+    }
+
+    address chainlinkAutomation;
+
+    uint256 totalNbParticipants;
+    uint256 public currentDayOfGame;
+    uint256 totalAmount;
+    uint256 public currentNbParticipants;
+    uint256 currentDayPosition;
+    IERC20 daiToken;
+    IERC4626 sdaiToken;
+
+    mapping(uint256 => address[]) public dayLeaderboard;
+    mapping(address => player) public playerStatus;
+
     constructor(
+        // Chainlink VRF
         uint64 subscriptionId
     ) VRFConsumerBaseV2(0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D) {
         COORDINATOR = VRFCoordinatorV2Interface(
             0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
         );
         s_subscriptionId = subscriptionId;
+
+        chainlinkAutomation = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+        currentDayOfGame = 1;
+        totalNbParticipants = 5;
+        currentNbParticipants = 5;
+        daiToken = IERC20(0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844);
+        sdaiToken = IERC4626(0xD8134205b0328F5676aaeFb3B2a0DC15f4029d8C);
     }
+
+    /*********************
+     *** CHAINLINK VRF ***
+     *********************/
 
     // Assumes the subscription is funded sufficiently.
     function requestRandomWords() external returns (uint256 requestId) {
@@ -167,5 +141,34 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
         require(s_requests[_requestId].exists, "request not found");
         RequestStatus memory request = s_requests[_requestId];
         return (request.fulfilled, request.randomWords);
+    }
+
+    function validateYourDay() external {
+        // require (playerStatus[msg.sender].qualified == true, "You are not qualified for this round!");
+        require(
+            playerStatus[msg.sender].lastDayPlayed != currentDayOfGame,
+            "You already played"
+        );
+        playerStatus[msg.sender].lastDayPlayed = currentDayOfGame;
+        dayLeaderboard[currentDayOfGame].push(msg.sender);
+    }
+
+    function closeTheDay() external returns (uint256) {
+        require(chainlinkAutomation == msg.sender, "You are not the owner");
+
+        if (dayLeaderboard[currentDayOfGame].length == currentNbParticipants) {
+            dayLeaderboard[currentDayOfGame].pop();
+        }
+        currentNbParticipants = dayLeaderboard[currentDayOfGame].length;
+        currentDayOfGame += 1;
+        return currentDayOfGame;
+    }
+
+    function buyTicket() external {
+        sdaiToken.deposit(100, address(this));
+    }
+
+    function returnTicket() external {
+        sdaiToken.withdraw(100, msg.sender, address(this));
     }
 }

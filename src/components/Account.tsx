@@ -10,48 +10,7 @@ import {
 import Image from 'next/image'
 import wallet from '../app/images/wallet.png'
 import { useState } from 'react'
-
-const takaraABI = [
-	{
-		inputs: [
-			{
-				internalType: 'uint256',
-				name: 'x',
-				type: 'uint256',
-			},
-		],
-		name: 'deposit',
-		outputs: [],
-		stateMutability: 'nonpayable',
-		type: 'function',
-	},
-	{
-		inputs: [
-			{
-				internalType: 'uint256',
-				name: 'x',
-				type: 'uint256',
-			},
-		],
-		name: 'play',
-		outputs: [],
-		stateMutability: 'nonpayable',
-		type: 'function',
-	},
-	{
-		inputs: [],
-		name: 'get',
-		outputs: [
-			{
-				internalType: 'uint256',
-				name: '',
-				type: 'uint256',
-			},
-		],
-		stateMutability: 'view',
-		type: 'function',
-	},
-]
+import { takaraABI } from '../utils/takaraABI'
 
 export function Account() {
 	const [balance, setBalance] = useState(0)

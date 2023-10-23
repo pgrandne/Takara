@@ -1,14 +1,14 @@
 require("@nomicfoundation/hardhat-toolbox");
 
 const alchemyId = process.env.ALCHEMY_ID;
-const privateKey = process.env.SEPOLIA_PRIVATE_KEY;
+const privateKey = process.env.GOERLI;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.19",
+  solidity: "0.8.20",
   networks: {
-    sepolia: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${alchemyId}`,
+    goerli: {
+      url: `https://eth-goerli.g.alchemy.com/v2/${alchemyId}`,
       accounts: [privateKey]
     }
   }
