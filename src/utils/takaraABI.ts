@@ -99,19 +99,6 @@ export const takaraABI = [
 	},
 	{
 		"inputs": [],
-		"name": "currentNbParticipants",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "d20Value",
 		"outputs": [
 			{
@@ -148,6 +135,19 @@ export const takaraABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "getNbParticipants",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -166,6 +166,25 @@ export const takaraABI = [
 				"internalType": "uint256[]",
 				"name": "randomWords",
 				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_player",
+				"type": "address"
+			}
+		],
+		"name": "isPlayer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -196,7 +215,7 @@ export const takaraABI = [
 		"outputs": [
 			{
 				"internalType": "bool",
-				"name": "qualified",
+				"name": "ticket",
 				"type": "bool"
 			},
 			{

@@ -64,7 +64,7 @@ contract Takara is VRFConsumerBaseV2 {
      */
 
     struct player {
-        bool qualified;
+        bool ticket;
         uint256 lastDayPlayed;
     }
 
@@ -73,8 +73,9 @@ contract Takara is VRFConsumerBaseV2 {
     uint256 totalNbParticipants;
     uint256 public currentDayOfGame;
     uint256 totalAmount;
-    uint256 public currentNbParticipants;
+    uint256 private currentNbParticipants;
     uint256 currentDayPosition;
+    uint256 ticketPrice;
     IERC20 daiToken;
     IERC4626 sdaiToken;
 
@@ -93,9 +94,10 @@ contract Takara is VRFConsumerBaseV2 {
         chainlinkAutomation = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
         currentDayOfGame = 1;
         totalNbParticipants = 5;
-        currentNbParticipants = 5;
+        currentNbParticipants = 0;
         daiToken = IERC20(0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844);
         sdaiToken = IERC4626(0xD8134205b0328F5676aaeFb3B2a0DC15f4029d8C);
+        ticketPrice = 10 * 10 ** 18;
     }
 
     /*********************
@@ -165,10 +167,31 @@ contract Takara is VRFConsumerBaseV2 {
     }
 
     function buyTicket() external {
-        sdaiToken.deposit(100, address(this));
+        require(!playerStatus[msg.sender].ticket, "You already have a ticket!");
+        require(
+            daiToken.balanceOf(msg.sender) >= ticketPrice,
+            "You don't have enough DAI"
+        );
+        require(
+            daiToken.allowance(msg.sender, address(this)) >= ticketPrice,
+            "Amount approved is too low!"
+        );
+        daiToken.transferFrom(msg.sender, address(this), ticketPrice);
+        daiToken.approve(address(sdaiToken), ticketPrice);
+        sdaiToken.deposit(ticketPrice, address(this));
+        playerStatus[msg.sender].ticket = true;
+        currentNbParticipants += 1;
     }
 
     function returnTicket() external {
         sdaiToken.withdraw(100, msg.sender, address(this));
+    }
+
+    function getNbParticipants() external view returns (uint256) {
+        return currentNbParticipants;
+    }
+
+    function isPlayer(address _player) external view returns (bool) {
+        return playerStatus[_player].ticket;
     }
 }

@@ -8,8 +8,36 @@ const titillium_Web = Titillium_Web({
 	weight: ['200', '300', '400', '600', '700'],
 	subsets: ['latin'],
 })
+import { useAccount, useContractRead } from 'wagmi'
+import { takaraABI } from '../utils/takaraABI'
+import { sdaiContract, takaraContract } from '../utils/contracts'
+import { useState } from 'react'
+import { erc4626ABI } from 'wagmi'
 
 export function Header() {
+	const { address } = useAccount()
+	const [nbPlayers, setNbPlayers] = useState(0)
+	const [pool, setPool] = useState(0)
+
+	const { refetch: refetchNbPlayers } = useContractRead({
+		address: takaraContract,
+		abi: takaraABI,
+		functionName: 'getNbParticipants',
+		onSuccess(data: boolean) {
+			setNbPlayers(Number(data))
+		},
+	})
+
+	const { refetch: refetchMaxWithdraw } = useContractRead({
+		address: sdaiContract,
+		abi: erc4626ABI,
+		functionName: 'maxWithdraw',
+		args: [takaraContract],
+		onSuccess(data) {
+			setPool(Number(data) / 10 ** 18)
+		},
+	})
+
 	return (
 		<>
 			<div className='absolute left-2 top-2'>
@@ -33,12 +61,13 @@ export function Header() {
 				className={`text-center pt-5 text-2xl text-pink-700 ${titillium_Web.className}`}
 			>
 				Make your choice! Find Takara the radish and earn{' '}
-				<span className='font-semibold'>7.32 DAI</span>
+				<span className='font-semibold'>{pool - nbPlayers * 10 + 0.1} DAI</span>
 			</h2>
 			<h3
 				className={`text-center py-3 text-xl text-pink-600 ${titillium_Web.className}`}
 			>
-				Curently, 3 players are competing, next game in 10 hours
+				Curently, {nbPlayers} {nbPlayers > 1 ? 'players are' : 'player is'}{' '}
+				competing, next game in 7 hours
 			</h3>
 		</>
 	)

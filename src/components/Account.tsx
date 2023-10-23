@@ -3,47 +3,105 @@
 import {
 	useAccount,
 	useBalance,
-	usePrepareContractWrite,
+	useContractRead,
 	useContractWrite,
+	usePrepareContractWrite,
 	useWaitForTransaction,
 } from 'wagmi'
 import Image from 'next/image'
 import wallet from '../app/images/wallet.png'
 import { useState } from 'react'
 import { takaraABI } from '../utils/takaraABI'
+import { daiContract, sdaiContract, takaraContract } from '../utils/contracts'
+import { erc20ABI } from 'wagmi'
 
 export function Account() {
 	const [balance, setBalance] = useState(0)
+	const [allowance, setAllowance] = useState(0)
+	const [isPlayer, setIsPlayer] = useState(false)
 	const { address } = useAccount()
-	const { data, refetch } = useBalance({
+
+	// DAI Balance
+	const { data: dataBalance, refetch: refetchBalance } = useBalance({
 		address,
-		token: '0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844',
+		token: daiContract,
 		watch: true,
 		onSuccess(data) {
 			setBalance(parseFloat(data.formatted))
 		},
 	})
 
-	// 0xd5082a9815057f717f15633a41710783017ee97d
+	// Allowance
 
-	const { config, error } = usePrepareContractWrite({
-		address: '0xecb504d39723b0be0e3a9aa33d646642d1051ee1',
-		abi: takaraABI,
-		functionName: 'deposit',
-		args: [100],
+	const { data: dataAllowance, refetch: refetchAllowance } = useContractRead({
+		address: daiContract,
+		abi: erc20ABI,
+		functionName: 'allowance',
+		args: [address!, takaraContract],
+		watch: true,
+		onSuccess(data) {
+			setAllowance(Number(data) / 10 ** 18)
+		},
 	})
-	const { write, data: dataDone } = useContractWrite(config)
+
+	// Ticket
+
+	const { data: dataPlayer, refetch: refetchPlayer } = useContractRead({
+		address: takaraContract,
+		abi: takaraABI,
+		functionName: 'isPlayer',
+		args: [address!],
+		watch: true,
+		onSuccess(data: boolean) {
+			setIsPlayer(data)
+		},
+	})
+
+	// DAI Approve function
+
+	const { config: configApprove, error: errorApprove } =
+		usePrepareContractWrite({
+			address: daiContract,
+			abi: erc20ABI,
+			functionName: 'approve',
+			args: [takaraContract, BigInt(100 * 10 ** 18)],
+		})
+	const { write: approve, data: dataApprove } = useContractWrite(configApprove)
+
+	const {
+		data: receiptApprove,
+		isLoading: isPendingApprove,
+		isSuccess: isSuccessApprove,
+	} = useWaitForTransaction({
+		hash: dataApprove?.hash,
+		onSuccess(data) {
+			buyTicket?.()
+		},
+	})
+
+	// Takara Deposit function
+
+	const { config: configBuyTicket, error: errorTakara } =
+		usePrepareContractWrite({
+			address: takaraContract,
+			abi: takaraABI,
+			functionName: 'buyTicket',
+		})
+	const { write: buyTicket, data: dataBuyTicket } = useContractWrite({
+		...configBuyTicket,
+		onSuccess(data) {},
+	})
 
 	const {
 		data: receipt,
 		isLoading: isPending,
 		isSuccess,
-	} = useWaitForTransaction({ hash: dataDone?.hash })
+	} = useWaitForTransaction({ hash: dataBuyTicket?.hash })
 
 	return (
 		<div className='mt-10 max-w-2xl mx-auto flex justify-center'>
 			<div className='bg-white shadow-md border border-gray-200 rounded-lg max-w-sm p-4 sm:p-6 lg:p-8 dark:bg-gray-800 dark:border-gray-700'>
-				{address !== '0x823dcdE7d906CF8bF1BB4208238eBB015Fe5bd0a' && (
+				{!isPlayer && (
 					<div className='space-y-6'>
 						<h3 className='text-xl font-medium text-gray-900 dark:text-white'>
 							Your Account
@@ -67,7 +125,7 @@ export function Account() {
 						{balance >= 100 ? (
 							<button
 								className='w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-								onClick={() => write?.()}
+								onClick={() => (allowance >= 100 ? buyTicket?.() : approve?.())}
 							>
 								Buy 🎟️
 							</button>
@@ -77,7 +135,7 @@ export function Account() {
 					</div>
 				)}
 
-				{address === '0x823dcdE7d906CF8bF1BB4208238eBB015Fe5bd0a' && (
+				{isPlayer && (
 					<div className='space-y-6'>
 						<h3 className='text-xl font-medium text-gray-900 dark:text-white'>
 							Your Account
@@ -93,7 +151,7 @@ export function Account() {
 						</div>
 						<button
 							className='w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-							onClick={() => write?.()}
+							// onClick={() => buyTicket?.()}
 						>
 							Withdraw 🪙
 						</button>
