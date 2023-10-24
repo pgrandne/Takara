@@ -13,6 +13,7 @@ import { takaraContract } from '../utils/contracts'
 
 export const Game = () => {
 	const { address } = useAccount()
+	const [selectedPlot, selectPlot] = useState(400)
 	const [isPlayer, setIsPlayer] = useState(false)
 	const notify1 = () =>
 		toast('🦄 You transasaction is sent, please wait the result!')
@@ -34,7 +35,8 @@ export const Game = () => {
 	const { config, error } = usePrepareContractWrite({
 		address: takaraContract,
 		abi: takaraABI,
-		functionName: 'validateYourDay',
+		functionName: 'play',
+		args: [selectedPlot],
 	})
 	const { write, data: dataDone } = useContractWrite({
 		...config,
@@ -56,19 +58,18 @@ export const Game = () => {
 	})
 
 	const plots = []
-	const [selectedPlot, selectPlot] = useState(400)
-	const [contractPlot, setContractPlot] = useState(0)
 	for (let i = 0; i < 81; i++) {
 		if (i !== selectedPlot)
 			plots.push(
 				<span
 					key={i}
 					className='plot'
-					onClick={() =>
+					onClick={() => {
+						selectPlot(i)
 						isPlayer
 							? write?.()
 							: window.alert('You need a ticket, please go on Account')
-					}
+					}}
 				></span>
 			)
 		else

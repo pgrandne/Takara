@@ -12,17 +12,14 @@ async function main() {
 
   // const lockedAmount = hre.ethers.parseEther("0.001");
 
-  const takara = await hre.ethers.deployContract("Takara", [unlockTime], {
-    // value: lockedAmount,
-  });
+  const takara = await hre.ethers.deployContract("Takara", ["0x94b9420F65fB3ec966d96BB034b35AF86487D929",14998]
+  );
 
   await takara.waitForDeployment();
 
-  // console.log(
-  //   `Lock with ${ethers.formatEther(
-  //     lockedAmount
-  //   )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  // );
+  console.log(
+    `Takara deployed to ${takara.target}`
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

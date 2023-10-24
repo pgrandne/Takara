@@ -23,6 +23,7 @@ export function Header() {
 		address: takaraContract,
 		abi: takaraABI,
 		functionName: 'getNbParticipants',
+		watch: true,
 		onSuccess(data: boolean) {
 			setNbPlayers(Number(data))
 		},
@@ -33,6 +34,7 @@ export function Header() {
 		abi: erc4626ABI,
 		functionName: 'maxWithdraw',
 		args: [takaraContract],
+		watch: true,
 		onSuccess(data) {
 			setPool(Number(data) / 10 ** 18)
 		},
@@ -61,7 +63,9 @@ export function Header() {
 				className={`text-center pt-5 text-2xl text-pink-700 ${titillium_Web.className}`}
 			>
 				Make your choice! Find Takara the radish and earn{' '}
-				<span className='font-semibold'>{pool - nbPlayers * 10 + 0.1} DAI</span>
+				<span className='font-semibold'>
+					{pool - nbPlayers * 100 + 0.1} DAI
+				</span>
 			</h2>
 			<h3
 				className={`text-center py-3 text-xl text-pink-600 ${titillium_Web.className}`}

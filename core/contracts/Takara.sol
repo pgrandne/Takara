@@ -5,6 +5,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Takara
@@ -13,7 +14,7 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
  * @custom:experimental This is an experimental contract.
  */
 
-contract Takara is VRFConsumerBaseV2 {
+contract Takara is Ownable, VRFConsumerBaseV2 {
     /*********************
      *** CHAINLINK VRF ***
      *********************/
@@ -53,10 +54,10 @@ contract Takara is VRFConsumerBaseV2 {
     // The default is 3, but you can set this higher.
     uint16 requestConfirmations = 3;
 
-    // For this example, retrieve 2 random values in one request.
+    // For this example, retrieve 1 random value in one request.
     // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
     uint32 numWords = 1;
-    uint256 public d20Value;
+    uint256 private winningPlot;
 
     /**
      * HARDCODED FOR GOERLI
@@ -69,12 +70,8 @@ contract Takara is VRFConsumerBaseV2 {
     }
 
     address chainlinkAutomation;
-
-    uint256 totalNbParticipants;
     uint256 public currentDayOfGame;
-    uint256 totalAmount;
     uint256 private currentNbParticipants;
-    uint256 currentDayPosition;
     uint256 ticketPrice;
     IERC20 daiToken;
     IERC4626 sdaiToken;
@@ -83,21 +80,30 @@ contract Takara is VRFConsumerBaseV2 {
     mapping(address => player) public playerStatus;
 
     constructor(
-        // Chainlink VRF
-        uint64 subscriptionId
-    ) VRFConsumerBaseV2(0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D) {
+        address _chainlinkAutomation,
+        // Chainlink VRF with Goerli Address
+        uint64 _subscriptionId
+    )
+        VRFConsumerBaseV2(0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D)
+        Ownable(msg.sender)
+    {
         COORDINATOR = VRFCoordinatorV2Interface(
             0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
         );
-        s_subscriptionId = subscriptionId;
+        s_subscriptionId = _subscriptionId;
 
-        chainlinkAutomation = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+        chainlinkAutomation = _chainlinkAutomation;
         currentDayOfGame = 1;
-        totalNbParticipants = 5;
         currentNbParticipants = 0;
         daiToken = IERC20(0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844);
         sdaiToken = IERC4626(0xD8134205b0328F5676aaeFb3B2a0DC15f4029d8C);
-        ticketPrice = 10 * 10 ** 18;
+        ticketPrice = 100 * 10 ** 18;
+    }
+
+    function changeChainlinkAutomation(
+        address _chainlinkAutomation
+    ) external onlyOwner {
+        chainlinkAutomation = _chainlinkAutomation;
     }
 
     /*********************
@@ -105,7 +111,7 @@ contract Takara is VRFConsumerBaseV2 {
      *********************/
 
     // Assumes the subscription is funded sufficiently.
-    function requestRandomWords() external returns (uint256 requestId) {
+    function requestRandomWords() internal returns (uint256 requestId) {
         // Will revert if subscription is not set and funded.
         requestId = COORDINATOR.requestRandomWords(
             keyHash,
@@ -132,7 +138,7 @@ contract Takara is VRFConsumerBaseV2 {
         require(s_requests[_requestId].exists, "request not found");
         s_requests[_requestId].fulfilled = true;
         s_requests[_requestId].randomWords = _randomWords;
-        d20Value = (_randomWords[0] % 100) + 1;
+        winningPlot = (_randomWords[0] % 100) + 1;
 
         emit RequestFulfilled(_requestId, _randomWords);
     }
@@ -145,25 +151,14 @@ contract Takara is VRFConsumerBaseV2 {
         return (request.fulfilled, request.randomWords);
     }
 
-    function validateYourDay() external {
-        // require (playerStatus[msg.sender].qualified == true, "You are not qualified for this round!");
-        require(
-            playerStatus[msg.sender].lastDayPlayed != currentDayOfGame,
-            "You already played"
-        );
-        playerStatus[msg.sender].lastDayPlayed = currentDayOfGame;
-        dayLeaderboard[currentDayOfGame].push(msg.sender);
-    }
+    /***********************
+     *** WRITE FUNCTIONS ***
+     ***********************/
 
-    function closeTheDay() external returns (uint256) {
+    function closeTheDay() external {
         require(chainlinkAutomation == msg.sender, "You are not the owner");
-
-        if (dayLeaderboard[currentDayOfGame].length == currentNbParticipants) {
-            dayLeaderboard[currentDayOfGame].pop();
-        }
-        currentNbParticipants = dayLeaderboard[currentDayOfGame].length;
         currentDayOfGame += 1;
-        return currentDayOfGame;
+        requestRandomWords();
     }
 
     function buyTicket() external {
@@ -184,8 +179,31 @@ contract Takara is VRFConsumerBaseV2 {
     }
 
     function returnTicket() external {
-        sdaiToken.withdraw(100, msg.sender, address(this));
+        require(playerStatus[msg.sender].ticket, "You don't have a ticket!");
+        playerStatus[msg.sender].ticket = false;
+        currentNbParticipants -= 1;
+        sdaiToken.withdraw(ticketPrice, msg.sender, address(this));
     }
+
+    function play(uint256 _selectedPlot) external {
+        require(
+            playerStatus[msg.sender].lastDayPlayed != currentDayOfGame,
+            "You already played"
+        );
+        playerStatus[msg.sender].lastDayPlayed = currentDayOfGame;
+        if (winningPlot == _selectedPlot) {
+            uint256 totalDeposit = ticketPrice * currentNbParticipants;
+            uint256 totalBalance = sdaiToken.convertToAssets(
+                sdaiToken.balanceOf(address(this))
+            );
+            uint256 winningPrize = totalBalance - totalDeposit;
+            sdaiToken.withdraw(winningPrize, msg.sender, address(this));
+        }
+    }
+
+    /**********************
+     *** VIEW FUNCTIONS ***
+     **********************/
 
     function getNbParticipants() external view returns (uint256) {
         return currentNbParticipants;
