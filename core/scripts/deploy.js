@@ -7,11 +7,6 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
-
-  // const lockedAmount = hre.ethers.parseEther("0.001");
-
   const takara = await hre.ethers.deployContract("Takara", ["0x94b9420F65fB3ec966d96BB034b35AF86487D929",14998]
   );
 

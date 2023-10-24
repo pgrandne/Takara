@@ -349,11 +349,6 @@
     outline: none;
   }
   
-  button:not(.disabled):hover {
-    background-color: #F12D22;
-    background-color: #C97B00;
-  }
-  
   #next {
     position: absolute;
     right: 1em;

@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { ConnectKitButton } from '../components/ConnectKitButton'
 import { Connected } from '../components/Connected'
 import { Tab } from '../components/Tab'
 import { Account } from '../components/Account'
 import { Game } from '../components/Game'
 import { Header } from '../components/Header'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 export default function Page() {
 	const [gameActiveTab, setGameActiveTab] = useState(false)
@@ -21,6 +22,7 @@ export default function Page() {
 				/>
 				{gameActiveTab ? <Game /> : <Account />}
 			</Connected>
+			<ToastContainer position='bottom-right' />
 		</>
 	)
 }

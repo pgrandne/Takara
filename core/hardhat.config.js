@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
+require('dotenv').config()
 
 const alchemyId = process.env.ALCHEMY_ID;
 const privateKey = process.env.GOERLI;

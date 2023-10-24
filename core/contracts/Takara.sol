@@ -67,16 +67,17 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
     struct player {
         bool ticket;
         uint256 lastDayPlayed;
+        uint256 lastPlot;
+        bool winner;
     }
 
-    address chainlinkAutomation;
-    uint256 public currentDayOfGame;
+    address private chainlinkAutomation;
+    uint256 private currentDayOfGame;
     uint256 private currentNbParticipants;
-    uint256 ticketPrice;
-    IERC20 daiToken;
-    IERC4626 sdaiToken;
+    uint256 public ticketPrice;
+    IERC20 private daiToken;
+    IERC4626 private sdaiToken;
 
-    mapping(uint256 => address[]) public dayLeaderboard;
     mapping(address => player) public playerStatus;
 
     constructor(
@@ -138,7 +139,7 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
         require(s_requests[_requestId].exists, "request not found");
         s_requests[_requestId].fulfilled = true;
         s_requests[_requestId].randomWords = _randomWords;
-        winningPlot = (_randomWords[0] % 100) + 1;
+        winningPlot = (_randomWords[0] % 81);
 
         emit RequestFulfilled(_requestId, _randomWords);
     }
@@ -191,6 +192,7 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
             "You already played"
         );
         playerStatus[msg.sender].lastDayPlayed = currentDayOfGame;
+        playerStatus[msg.sender].lastPlot = _selectedPlot;
         if (winningPlot == _selectedPlot) {
             uint256 totalDeposit = ticketPrice * currentNbParticipants;
             uint256 totalBalance = sdaiToken.convertToAssets(
@@ -198,6 +200,7 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
             );
             uint256 winningPrize = totalBalance - totalDeposit;
             sdaiToken.withdraw(winningPrize, msg.sender, address(this));
+            playerStatus[msg.sender].winner = false;
         }
     }
 
@@ -209,7 +212,22 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
         return currentNbParticipants;
     }
 
-    function isPlayer(address _player) external view returns (bool) {
-        return playerStatus[_player].ticket;
+    function isPlayer(
+        address _player
+    ) external view returns (bool, uint256, uint256, bool) {
+        return (
+            playerStatus[_player].ticket,
+            playerStatus[_player].lastDayPlayed,
+            playerStatus[_player].lastPlot,
+            playerStatus[_player].winner
+        );
+    }
+
+    function getWinningPlot() external view returns (uint256) {
+        return winningPlot;
+    }
+
+    function getCurrentDay() external view returns (uint256) {
+        return currentDayOfGame;
     }
 }

@@ -12,14 +12,17 @@ import Image from 'next/image'
 import wallet from '../app/images/wallet.png'
 import { useState } from 'react'
 import { takaraABI } from '../utils/takaraABI'
-import { daiContract, sdaiContract, takaraContract } from '../utils/contracts'
+import { daiContract, takaraContract } from '../utils/contracts'
 import { erc20ABI } from 'wagmi'
+import { toast } from 'react-toastify'
 
 export function Account() {
 	const [balance, setBalance] = useState(0)
 	const [allowance, setAllowance] = useState(0)
 	const [isPlayer, setIsPlayer] = useState(false)
 	const { address } = useAccount()
+	const [approved, setApproved] = useState(false)
+	const notify = (text: string) => toast(text)
 
 	// DAI Balance
 	const { data: dataBalance, refetch: refetchBalance } = useBalance({
@@ -40,7 +43,7 @@ export function Account() {
 		args: [address!, takaraContract],
 		watch: true,
 		onSuccess(data) {
-			setAllowance(Number(data) / 10 ** 18)
+			Number(data) / 10 ** 18 >= 100 ? setApproved(true) : setApproved(false)
 		},
 	})
 
@@ -52,8 +55,8 @@ export function Account() {
 		functionName: 'isPlayer',
 		args: [address!],
 		watch: true,
-		onSuccess(data: boolean) {
-			setIsPlayer(data)
+		onSuccess(data: any) {
+			setIsPlayer(data[0])
 		},
 	})
 
@@ -66,7 +69,12 @@ export function Account() {
 			functionName: 'approve',
 			args: [takaraContract, BigInt(100 * 10 ** 18)],
 		})
-	const { write: approve, data: dataApprove } = useContractWrite(configApprove)
+	const { write: approve, data: dataApprove } = useContractWrite({
+		...configApprove,
+		onSuccess(data) {
+			notify('Approving, please wait')
+		},
+	})
 
 	const {
 		data: receiptApprove,
@@ -75,7 +83,7 @@ export function Account() {
 	} = useWaitForTransaction({
 		hash: dataApprove?.hash,
 		onSuccess(data) {
-			buyTicket?.()
+			notify('Approved')
 		},
 	})
 
@@ -89,14 +97,43 @@ export function Account() {
 		})
 	const { write: buyTicket, data: dataBuyTicket } = useContractWrite({
 		...configBuyTicket,
-		onSuccess(data) {},
+		onSuccess(data) {
+			notify('Depositing, please wait')
+		},
 	})
 
 	const {
 		data: receipt,
 		isLoading: isPending,
 		isSuccess,
-	} = useWaitForTransaction({ hash: dataBuyTicket?.hash })
+	} = useWaitForTransaction({
+		hash: dataBuyTicket?.hash,
+		onSuccess(data) {
+			notify('Deposited')
+		},
+	})
+
+	// Takara Withdraw function
+
+	const { config: configReturnTicket } = usePrepareContractWrite({
+		address: takaraContract,
+		abi: takaraABI,
+		functionName: 'returnTicket',
+	})
+	const { write: returnTicket, data: dataReturnTicket } = useContractWrite({
+		...configBuyTicket,
+		onSuccess(data) {
+			notify('Withdrawing, please wait')
+		},
+	})
+
+	const { data: receiptWithdraw, isLoading: isPendingWithdraw } =
+		useWaitForTransaction({
+			hash: dataReturnTicket?.hash,
+			onSuccess(data) {
+				notify('Withdrawed')
+			},
+		})
 
 	return (
 		<div className='mt-10 max-w-2xl mx-auto flex justify-center'>
@@ -123,12 +160,24 @@ export function Account() {
 							</label>
 						</div>
 						{balance >= 100 ? (
-							<button
-								className='w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-								onClick={() => (allowance >= 100 ? buyTicket?.() : approve?.())}
-							>
-								Buy 🎟️
-							</button>
+							<>
+								<button
+									disabled={approved}
+									className={` w-full text-white focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+									${!approved ? 'bg-blue-700  hover:bg-blue-800' : 'bg-blue-200'} `}
+									onClick={() => approve?.()}
+								>
+									{!approved ? 'Approve ✅' : 'Approved'}
+								</button>
+								<button
+									disabled={!approved}
+									className={` w-full text-white focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+									${approved ? 'bg-blue-700  hover:bg-blue-800' : 'bg-blue-200'} `}
+									onClick={() => buyTicket?.()}
+								>
+									Buy 🎟️
+								</button>
+							</>
 						) : (
 							<div>You need 100 DAI minimum to buy a ticket</div>
 						)}
@@ -150,8 +199,8 @@ export function Account() {
 							</label>
 						</div>
 						<button
-							className='w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
-							// onClick={() => buyTicket?.()}
+							className=' w-full text-white focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-700 hover:bg-blue-800'
+							onClick={() => returnTicket?.()}
 						>
 							Withdraw 🪙
 						</button>
