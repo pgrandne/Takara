@@ -40,6 +40,7 @@ export function Account() {
 		address: daiContract,
 		abi: erc20ABI,
 		functionName: 'allowance',
+		watch: true,
 		args: [address!, takaraContract],
 		onSuccess(data) {
 			Number(data) / 10 ** 18 >= 100 ? setApproved(true) : setApproved(false)
@@ -52,6 +53,7 @@ export function Account() {
 		address: takaraContract,
 		abi: takaraABI,
 		functionName: 'isPlayer',
+		watch: true,
 		args: [address!],
 		onSuccess(data: any) {
 			setIsPlayer(data[0])

@@ -244,7 +244,7 @@ contract Takara is Ownable, VRFConsumerBaseV2 {
             uint256 winningPrize = totalBalance - totalDeposit;
             sdaiToken.withdraw(winningPrize, msg.sender, address(this));
             playerStatus[msg.sender].winner = true;
-        }
+        } else (playerStatus[msg.sender].winner = false);
     }
 
     /**********************

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Connected } from '../components/Connected'
 import { Tab } from '../components/Tab'
 import { Account } from '../components/Account'
@@ -20,6 +20,7 @@ export default function Page() {
 					gameActiveTab={gameActiveTab}
 					setGameActiveTab={setGameActiveTab}
 				/>
+
 				{gameActiveTab ? <Game /> : <Account />}
 			</Connected>
 			<ToastContainer position='bottom-right' />
