@@ -504,6 +504,12 @@
     background-image: url("./images/carrots.svg");
     background-size: contain;
   }
+
+  .plant.radish .bg {
+    background-image: url("./images/radish.png");
+    background-size: contain;
+  }
+
   
   .plant.carrot.correct .bg {
     background-image: url("./images/carrots-correct.svg");
