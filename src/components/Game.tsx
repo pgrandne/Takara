@@ -30,7 +30,19 @@ export const Game = () => {
 	})
 	const notify1 = () =>
 		toast('🦄 You transasaction is sent, please wait the result!')
-	const notify2 = () => toast('🥕🥕 were on this plot, try again tomorrow!')
+	const notify2 = () => toast('Discovered plot!')
+
+	// Current day of Game
+
+	const { data: dataDay, refetch: refetchDay } = useContractRead({
+		address: takaraContract,
+		abi: takaraABI,
+		functionName: 'getCurrentDay',
+		watch: true,
+		onSuccess(data: number) {
+			setCurrentDay(Number(data))
+		},
+	})
 
 	// Player Status
 
@@ -43,22 +55,11 @@ export const Game = () => {
 		onSuccess(data: [boolean, number, number, boolean]) {
 			setIsPlayer({
 				ticket: data[0],
-				lastDayPlayed: data[1],
-				lastPlot: data[2],
+				lastDayPlayed: Number(data[1]),
+				lastPlot: Number(data[2]),
 				winner: data[3],
 			})
-		},
-	})
-
-	// Current day of Game
-
-	const { data: dataDay, refetch: refetchDay } = useContractRead({
-		address: takaraContract,
-		abi: takaraABI,
-		functionName: 'getCurrentDay',
-		watch: true,
-		onSuccess(data: number) {
-			setCurrentDay(data)
+			displayPlot(Number(data[2]))
 		},
 	})
 
@@ -84,7 +85,6 @@ export const Game = () => {
 	} = useWaitForTransaction({
 		hash: dataDone?.hash,
 		onSuccess(data) {
-			displayPlot(selectedPlot)
 			notify2()
 		},
 	})
