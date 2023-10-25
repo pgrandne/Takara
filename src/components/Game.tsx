@@ -60,19 +60,16 @@ export const Game = () => {
 				winner: data[3],
 			})
 			displayPlot(Number(data[2]))
+			console.log(isPlayer)
 		},
 	})
 
 	//Play the game
-
-	const { config, error } = usePrepareContractWrite({
+	const { write, data: dataDone } = useContractWrite({
 		address: takaraContract,
 		abi: takaraABI,
 		functionName: 'play',
 		args: [selectedPlot],
-	})
-	const { write, data: dataDone } = useContractWrite({
-		...config,
 		onSuccess(data) {
 			notify1()
 		},

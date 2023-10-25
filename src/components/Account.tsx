@@ -41,7 +41,6 @@ export function Account() {
 		abi: erc20ABI,
 		functionName: 'allowance',
 		args: [address!, takaraContract],
-		watch: true,
 		onSuccess(data) {
 			Number(data) / 10 ** 18 >= 100 ? setApproved(true) : setApproved(false)
 		},
@@ -54,7 +53,6 @@ export function Account() {
 		abi: takaraABI,
 		functionName: 'isPlayer',
 		args: [address!],
-		watch: true,
 		onSuccess(data: any) {
 			setIsPlayer(data[0])
 		},
@@ -84,19 +82,16 @@ export function Account() {
 		hash: dataApprove?.hash,
 		onSuccess(data) {
 			notify('Approved')
+			refetchAllowance()
 		},
 	})
 
 	// Takara Deposit function
 
-	const { config: configBuyTicket, error: errorTakara } =
-		usePrepareContractWrite({
-			address: takaraContract,
-			abi: takaraABI,
-			functionName: 'buyTicket',
-		})
 	const { write: buyTicket, data: dataBuyTicket } = useContractWrite({
-		...configBuyTicket,
+		address: takaraContract,
+		abi: takaraABI,
+		functionName: 'buyTicket',
 		onSuccess(data) {
 			notify('Depositing, please wait')
 		},
@@ -110,18 +105,17 @@ export function Account() {
 		hash: dataBuyTicket?.hash,
 		onSuccess(data) {
 			notify('Deposited')
+			refetchPlayer()
 		},
 	})
 
 	// Takara Withdraw function
 
-	const { config: configReturnTicket } = usePrepareContractWrite({
+	const { config: configReturnTicket } = usePrepareContractWrite({})
+	const { write: returnTicket, data: dataReturnTicket } = useContractWrite({
 		address: takaraContract,
 		abi: takaraABI,
 		functionName: 'returnTicket',
-	})
-	const { write: returnTicket, data: dataReturnTicket } = useContractWrite({
-		...configBuyTicket,
 		onSuccess(data) {
 			notify('Withdrawing, please wait')
 		},
@@ -131,7 +125,8 @@ export function Account() {
 		useWaitForTransaction({
 			hash: dataReturnTicket?.hash,
 			onSuccess(data) {
-				notify('Withdrawed')
+				notify('Withdrawn')
+				refetchPlayer()
 			},
 		})
 
